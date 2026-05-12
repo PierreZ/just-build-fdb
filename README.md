@@ -31,7 +31,22 @@ just-build-fdb/
 nix develop          # or let direnv do it via .envrc
 just bootstrap       # clone all configured upstream repos
 just setup           # create build/ + ccache dirs, docker pull the image
+just configure       # cmake configure inside the container
+just build           # ninja fdbserver fdbcli mako (cold: hours, warm: minutes)
 ```
+
+## Daily loop
+
+```bash
+just build                                # incremental rebuild of dev trio
+just sim                                  # run a simulation (AtomicOps by default)
+just sim tests/fast/CycleTest.toml "-s 42 -b on"
+just shell                                # interactive shell in the container
+just exec "ls /workspace/build/bin"       # one-shot command in the container
+just down                                 # stop the container
+```
+
+Run `just` with no arguments for the live recipe list.
 
 ## Adding another repo
 

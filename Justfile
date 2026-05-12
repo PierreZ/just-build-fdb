@@ -85,6 +85,11 @@ down:
 shell: up
     docker exec -it {{container}} bash
 
+# Run a one-shot command inside the container.
+# Usage: just exec "ls /workspace/build/bin"
+exec cmd: up
+    docker exec -i {{container}} bash -lc '{{cmd}}'
+
 # Configure the build with the dev flag set. Run once, or after big CMake changes.
 configure: up
     docker exec -i {{container}} bash -lc '\
@@ -97,3 +102,16 @@ configure: up
 # Pass a different space-separated set to override (e.g. `just build fdbcli`).
 build target="fdbserver fdbcli mako": up
     docker exec -i {{container}} bash -lc 'ninja -C /workspace/build -j {{jobs}} {{target}}'
+
+# Run an fdbserver simulation.
+# Usage:
+#   just sim                                           # AtomicOps, default args
+#   just sim tests/fast/Cycle.toml                     # different test, default args
+#   just sim tests/fast/Cycle.toml "-s 42 -b on"       # override args (quote them)
+sim test="tests/fast/AtomicOps.toml" extra="-s 12345 -b on": up
+    docker exec -i {{container}} bash -lc '\
+        mkdir -p /tmp/simrun && cd /tmp/simrun && \
+        /workspace/build/bin/fdbserver \
+            -r simulation \
+            -f /workspace/src/{{test}} \
+            {{extra}}'

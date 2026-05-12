@@ -9,10 +9,16 @@ the cloned subtrees (`src/foundationdb`, `joshua/`, `build-support/`,
 ## Working principles here
 
 - **Keep it minimal.** Recipes are added incrementally as the user asks for
-  them. Don't pre-emptively lift the CI-parity, sim-loop, mako, serve, etc.
-  recipes from the gist (`Justfile` history) until they're requested.
+  them. Don't pre-emptively lift the CI-parity, sim-loop, mako, serve, fmt,
+  etc. recipes from the gist (`Justfile` history) until they're requested.
 - **Two first-time recipes by design**: `bootstrap` (clone repos) and `setup`
   (mkdir + docker pull). They fail for different reasons — keep them split.
+- **Container as a service.** `up` starts `fdb-dev` detached; every other
+  container-touching recipe `docker exec`s into it. No foreground `docker run`.
+- **Pass-through extras over many positional args.** `sim` takes one
+  `extra` string the user quotes (`"-s 42 -b on"`) rather than seed/buggify/
+  etc. as separate params — keeps the signature stable as fdbserver flags
+  evolve and avoids the `just -- ...` separator dance.
 - **One bootstrap, many repos.** Each upstream gets an `<name>_owner` +
   `<name>_repo` + `<name>_host` triple at the top of the `Justfile`, plus
   one `_clone` line in `bootstrap`. The private `_clone` helper is the only
