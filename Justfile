@@ -90,6 +90,8 @@ shell: up
 exec cmd: up
     docker exec -i {{container}} bash -lc '{{cmd}}'
 
+# Simulation tests are run via Joshua, not ctest, so ENABLE_SIMULATION_TESTS
+# stays OFF here.
 # Configure the build with the dev flag set. Run once, or after big CMake changes.
 configure: up
     docker exec -i {{container}} bash -lc '\
@@ -115,3 +117,24 @@ sim test="tests/fast/AtomicOps.toml" extra="-s 12345 -b on": up
             -r simulation \
             -f /workspace/src/{{test}} \
             {{extra}}'
+
+# Check clang-format on all C/C++ sources. Fails on diff. Mirrors CI.
+fmt-check: up
+    docker exec -i {{container}} bash -lc '\
+        cd /workspace/src && \
+        DIFF=$(find . -type f \( -name "*.c" -o -name "*.cpp" -o -name "*.h" -o -name "*.hpp" \) \
+            -a ! -name sqlite3.amalgamation.c -a ! -path "*.git*" \
+            -exec clang-format -style=file --output-replacements-xml {} \; \
+            | grep -c "<replacement " || true) ; \
+        if [ "$DIFF" != "0" ]; then \
+            echo "clang-format would modify $DIFF locations. Run \`just fmt\` to fix." >&2 ; \
+            exit 1 ; \
+        fi ; \
+        echo "format OK"'
+
+# Fix clang-format issues in place.
+fmt: up
+    docker exec -i {{container}} bash -lc '\
+        find /workspace/src -type f \( -name "*.c" -o -name "*.cpp" -o -name "*.h" -o -name "*.hpp" \) \
+            -a ! -name sqlite3.amalgamation.c -a ! -path "*.git*" \
+            -exec clang-format -style=file -i {} \;'
