@@ -3,6 +3,7 @@
 # happens inside the upstream Rocky 9 container.
 
 image     := "foundationdb/devel:rockylinux9-20250823035553-71c3cd601f"
+container := "fdb-dev"
 
 # Repo-relative paths. `justfile_directory()` is the dir containing this Justfile,
 # so this works no matter where you invoke `just` from.
@@ -28,6 +29,10 @@ k8s_operator_host  := root / "k8s-operator"
 # ccache lives outside the repo so it survives `rm -rf build/` and re-clones.
 ccache    := env_var('HOME') / ".cache/fdb-ccache"
 
+# Dev parallelism. Override per-call (e.g. `just build fdbserver` then later
+# `just build target=foo`; bump this when CI-parity recipes land).
+jobs      := "3"
+
 # Default: list recipes.
 default:
     @just --list
@@ -52,3 +57,43 @@ bootstrap:
 setup:
     mkdir -p {{build_host}} {{ccache}}
     docker pull {{image}}
+
+# Start the dev container detached. Idempotent.
+up:
+    @if [ -z "$(docker ps -q -f name=^{{container}}$)" ]; then \
+        docker run -d --rm \
+            --name {{container}} \
+            -v {{src_host}}:/workspace/src \
+            -v {{build_host}}:/workspace/build \
+            -v {{ccache}}:/workspace/.ccache \
+            -w /workspace \
+            -e CC=clang -e CXX=clang++ \
+            -e USE_LD=LLD -e USE_LIBCXX=1 \
+            -e CCACHE_DIR=/workspace/.ccache \
+            --user "$(id -u):$(id -g)" \
+            {{image}} sleep infinity ; \
+        echo "started {{container}}" ; \
+    else \
+        echo "{{container}} already running" ; \
+    fi
+
+# Stop (and `--rm` removes) the container.
+down:
+    -docker stop {{container}}
+
+# Interactive bash inside the running container. `just up` first if needed.
+shell: up
+    docker exec -it {{container}} bash
+
+# Configure the build with the dev flag set. Run once, or after big CMake changes.
+configure: up
+    docker exec -i {{container}} bash -lc '\
+        cmake -S /workspace/src -B /workspace/build \
+            -D USE_CCACHE=ON -D USE_WERROR=ON \
+            -D USE_LD=LLD -D USE_LIBCXX=1 \
+            -G Ninja'
+
+# Build one or more ninja targets. Defaults to the dev trio: fdbserver, fdbcli, mako.
+# Pass a different space-separated set to override (e.g. `just build fdbcli`).
+build target="fdbserver fdbcli mako": up
+    docker exec -i {{container}} bash -lc 'ninja -C /workspace/build -j {{jobs}} {{target}}'
