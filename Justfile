@@ -138,3 +138,11 @@ fmt: up
         find /workspace/src -type f \( -name "*.c" -o -name "*.cpp" -o -name "*.h" -o -name "*.hpp" \) \
             -a ! -name sqlite3.amalgamation.c -a ! -path "*.git*" \
             -exec clang-format -style=file -i {} \;'
+
+# Build the Joshua correctness tarball (fdbserver + tests + TestHarness2 +
+# Joshua entry scripts). Output: build/packages/correctness-*.tar.gz.
+# Uses `package_tests`, not `packages` — the latter doesn't include the tarball.
+correctness-tarball: up
+    docker exec -i {{container}} bash -lc '\
+        ninja -C /workspace/build -j {{jobs}} package_tests && \
+        ls -lh /workspace/build/packages/correctness*.tar.gz'
