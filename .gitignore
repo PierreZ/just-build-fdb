@@ -1,0 +1,18 @@
+# Cloned upstream repos are NOT tracked here. Use `just bootstrap` to populate.
+/src/*
+!/src/.gitkeep
+
+# Build outputs.
+/build/*
+!/build/.gitkeep
+
+# Whole subtrees populated by `just bootstrap` (each has its own .git).
+/joshua/
+/build-support/
+/k8s-operator/
+
+# Editor / OS noise.
+.direnv/
+.envrc.local
+*.swp
+.DS_Store
