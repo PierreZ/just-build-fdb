@@ -1,12 +1,6 @@
-# Cloned upstream repos are NOT tracked here. Use `just bootstrap` to populate.
-/src/*
-!/src/.gitkeep
-
-# Build outputs.
-/build/*
-!/build/.gitkeep
-
-# Whole subtrees populated by `just bootstrap` (each has its own .git).
+# Cloned upstream repos and build outputs (each has its own .git or is generated).
+/src/
+/build/
 /joshua/
 /build-support/
 /k8s-operator/

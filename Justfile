@@ -20,8 +20,8 @@ build_support_repo := "fdb-build-support"
 k8s_operator_owner := "FoundationDB"
 k8s_operator_repo  := "fdb-kubernetes-operator"
 
-src_host           := root / "src" / fdb_repo
-build_host         := root / "build" / fdb_repo
+src_host           := root / "src"
+build_host         := root / "build"
 joshua_host        := root / "joshua"
 build_support_host := root / "build-support"
 k8s_operator_host  := root / "k8s-operator"

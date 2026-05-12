@@ -12,8 +12,8 @@ just-build-fdb/
 ├── flake.nix       # nix dev shell (just, docker-client, git, jq, ripgrep, libxml2)
 ├── .envrc          # direnv: auto-loads the flake if `nix` is on PATH
 ├── Justfile        # recipes — entry point for every operation
-├── src/            # upstream source clones (gitignored)
-├── build/          # build outputs (gitignored)
+├── src/            # apple/foundationdb clone (gitignored)
+├── build/          # foundationdb build output (gitignored)
 ├── dockerfiles/    # custom Dockerfiles
 ├── joshua/         # fdb-joshua clone (gitignored)
 ├── build-support/  # fdb-build-support clone (gitignored)

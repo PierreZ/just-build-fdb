@@ -3,8 +3,12 @@
 ## What this repo is
 
 A thin shell around upstream FoundationDB tooling. The actual work happens in
-the cloned subtrees (`src/foundationdb`, `joshua/`, `build-support/`,
+the cloned subtrees (`src/` = apple/foundationdb, `joshua/`, `build-support/`,
 `k8s-operator/`) and inside the Rocky 9 dev container. This repo is the glue.
+
+Each top-level dir IS the clone — `src/` is itself the foundationdb checkout,
+not a container of named subdirs. Same for `joshua/`, `build-support/`,
+`k8s-operator/`.
 
 ## Working principles here
 
